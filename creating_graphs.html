@@ -55,6 +55,7 @@
 			var status_200 = dateDim.group().reduceSum(function (d){
 				return d.http_200;
 			});
+
 			var status_302 = dateDim.group().reduceSum(function (d){
 				return d.http_302;
 			});
@@ -78,7 +79,7 @@
 				.yAxisLabel("Hits per day");
 
 			var yearDim = ndx.dimension(function (d) {
-                return +d.Year;
+                return + d.Year;
             });
             var year_total = yearDim.group().reduceSum(function (d) {
                 return d.total;
