@@ -48,18 +48,33 @@
 			var dateDim = ndx.dimension(function (d) {
 				return d.date;
 			});
-			var hits = dateDim.group().reduceSum(function (d) {
-				return d.total;
-			})
+			// var hits = dateDim.group().reduceSum(function (d) {
+			// 	return d.total;
+			// })
+
+			var status_200 = dateDim.group().reduceSum(function (d){
+				return d.http_200;
+			});
+			var status_302 = dateDim.group().reduceSum(function (d){
+				return d.http_302;
+			});
+			var status_404 = dateDim.group().reduceSum(function (d){
+				return d.http_404;
+			});
+
 			var minDate = dateDim.bottom(1)[0].date;
 			var maxDate = dateDim.top(1)[0].date;
 
 			hitslineChart
 				.width(500).height(200)
 				.dimension(dateDim)
-				.group(hits)
-				.brushOn(true)
+				.group(status_200, "200")
+				.stack(status_302, "302")
+				.stack(status_404, "404")
+				.renderArea(true)
+				.brushOn(false)
 				.x(d3.time.scale().domain([minDate, maxDate]))
+				.legend(dc.legend().x(450).y(10).itemHeight(13).gap(5))
 				.yAxisLabel("Hits per day");
 
 			var yearDim = ndx.dimension(function (d) {
@@ -77,6 +92,19 @@
                 .dimension(yearDim)
                 .group(year_total);
 
+			var datatable   = dc.dataTable("#dc-data-table");
+			datatable
+			    .dimension(dateDim)
+			    .group(function(d) {return d.Year;})
+			    // dynamic columns creation using an array of closures
+			    .columns([
+			        function(d) { return d.date.getDate() + "/" + (d.date.getMonth() + 1) + "/" + d.date.getFullYear(); },
+			        function(d) {return d.http_200;},
+			        function(d) {return d.http_302;},
+			        function(d) {return d.http_404;},        
+			        function(d) {return d.total;}
+			    ]);
+
             dc.renderAll();
 		}
 	</script>
@@ -84,5 +112,18 @@
 <body>
 	<div id="chart-ring-year"></div>
 	<div id="chart-line-hitsperday"></div>
+
+	<div style='clear:both;'>
+		<table id="dc-data-table">
+			<thead>
+				<tr class="header">
+					<th> HTTP Response Date</th>
+					<th> HTTP Response 200</th>
+					<th> HTTP Response 302</th>
+					<th> HTTP Response Total</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
 </body>
 </html>
